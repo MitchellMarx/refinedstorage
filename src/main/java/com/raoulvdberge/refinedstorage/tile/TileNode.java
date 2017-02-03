@@ -9,10 +9,11 @@ import com.raoulvdberge.refinedstorage.tile.data.TileDataParameter;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public abstract class TileNode extends TileBase implements INetworkNode, IRedstoneConfigurable, IWrenchable {
+public abstract class TileNode extends TileBase implements ITickable, INetworkNode, IRedstoneConfigurable, IWrenchable {
     public static final TileDataParameter<Integer> REDSTONE_MODE = RedstoneMode.createParameter();
 
     private static final String NBT_CONNECTED = "Connected";
@@ -44,9 +45,12 @@ public abstract class TileNode extends TileBase implements INetworkNode, IRedsto
 
     public abstract void updateNode();
 
+    protected int ticks = 0;
+
     @Override
     public void update() {
         if (!getWorld().isRemote) {
+            ticks++;
             if (networkPos != null) {
                 TileEntity tile = getWorld().getTileEntity(networkPos);
 
@@ -79,8 +83,6 @@ public abstract class TileNode extends TileBase implements INetworkNode, IRedsto
                 updateNode();
             }
         }
-
-        super.update();
     }
 
     @Override

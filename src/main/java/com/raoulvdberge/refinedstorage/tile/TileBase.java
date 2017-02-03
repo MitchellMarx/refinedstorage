@@ -20,22 +20,14 @@ import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
 
-public abstract class TileBase extends TileEntity implements ITickable, IOnServerTickHandler {
+public abstract class TileBase extends TileEntity implements IOnServerTickHandler {
     private static final String NBT_DIRECTION = "Direction";
 
     private EnumFacing direction = EnumFacing.NORTH;
 
     protected TileDataManager dataManager = new TileDataManager(this);
-    protected int ticks = 0;
 
     private ServerTickEventListener serverTickEventListener = new ServerTickEventListener(this);
-
-    @Override
-    public void update() {
-        if (!getWorld().isRemote) {
-            ticks++;
-        }
-    }
 
     public void onDestroyed() {
         if (world.isRemote)

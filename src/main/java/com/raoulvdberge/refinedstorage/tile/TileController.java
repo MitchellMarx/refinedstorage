@@ -67,6 +67,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
@@ -80,7 +81,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class TileController extends TileBase implements INetworkMaster, IEnergyReceiver, IRedstoneConfigurable {
+public class TileController extends TileBase implements ITickable, INetworkMaster, IEnergyReceiver, IRedstoneConfigurable {
     public static final TileDataParameter<Integer> REDSTONE_MODE = RedstoneMode.createParameter();
 
     public static final TileDataParameter<Integer> ENERGY_USAGE = new TileDataParameter<>(DataSerializers.VARINT, 0, new ITileDataProducer<Integer, TileController>() {
@@ -234,9 +235,12 @@ public class TileController extends TileBase implements INetworkMaster, IEnergyR
         return nodeGraph;
     }
 
+    protected int ticks = 0;
+
     @Override
     public void update() {
         if (!getWorld().isRemote) {
+            ticks++;
             energyEU.update();
 
             if (!craftingTasksToRead.isEmpty()) {
@@ -335,8 +339,6 @@ public class TileController extends TileBase implements INetworkMaster, IEnergyR
                 updateBlock();
             }
         }
-
-        super.update();
     }
 
     @Override
