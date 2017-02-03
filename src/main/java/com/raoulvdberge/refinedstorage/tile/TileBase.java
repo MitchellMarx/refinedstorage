@@ -1,7 +1,11 @@
 package com.raoulvdberge.refinedstorage.tile;
 
+import com.raoulvdberge.refinedstorage.tile.data.IOnServerTickHandler;
+import com.raoulvdberge.refinedstorage.tile.data.ServerTickEventListener;
 import com.raoulvdberge.refinedstorage.tile.data.TileDataManager;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
@@ -10,11 +14,13 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.event.entity.player.PlayerContainerEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
 
-public abstract class TileBase extends TileEntity implements ITickable {
+public abstract class TileBase extends TileEntity implements ITickable, IOnServerTickHandler {
     private static final String NBT_DIRECTION = "Direction";
 
     private EnumFacing direction = EnumFacing.NORTH;
@@ -22,13 +28,43 @@ public abstract class TileBase extends TileEntity implements ITickable {
     protected TileDataManager dataManager = new TileDataManager(this);
     protected int ticks = 0;
 
+    private ServerTickEventListener serverTickEventListener = new ServerTickEventListener(this);
+
     @Override
     public void update() {
         if (!getWorld().isRemote) {
             ticks++;
-
-            dataManager.detectAndSendChanges();
         }
+    }
+
+    public void onDestroyed() {
+        if (world.isRemote)
+            return;
+
+        serverTickEventListener.setEnabled(false);
+
+        IItemHandler handler = getDrops();
+        if(handler != null) {
+            for (int i = 0; i < handler.getSlots(); ++i) {
+                if (handler.getStackInSlot(i) != null) {
+                    InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), handler.getStackInSlot(i));
+                }
+            }
+        }
+    }
+
+    public void onServerTick(TickEvent.ServerTickEvent e)
+    {
+        dataManager.detectAndSendChanges();
+    }
+
+    public void onContainerOpen(PlayerContainerEvent.Open e)
+    {
+        if (getWorld().isRemote)
+            return;
+
+        serverTickEventListener.setEnabled(true);
+        getDataManager().sendParametersTo((EntityPlayerMP) e.getEntityPlayer());
     }
 
     public void updateBlock() {

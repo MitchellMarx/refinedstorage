@@ -15,8 +15,8 @@ public class ContainerListener {
         if (container instanceof ContainerBase) {
             TileBase tile = ((ContainerBase) container).getTile();
 
-            if (tile != null && !tile.getWorld().isRemote) {
-                tile.getDataManager().sendParametersTo((EntityPlayerMP) e.getEntityPlayer());
+            if (tile != null){
+                tile.onContainerOpen(e);
             }
         }
     }

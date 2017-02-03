@@ -101,18 +101,7 @@ public abstract class BlockBase extends Block {
 
     @Override
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
-        TileEntity tile = world.getTileEntity(pos);
-
-        if (tile instanceof TileBase && ((TileBase) tile).getDrops() != null) {
-            IItemHandler handler = ((TileBase) tile).getDrops();
-
-            for (int i = 0; i < handler.getSlots(); ++i) {
-                if (handler.getStackInSlot(i) != null) {
-                    InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), handler.getStackInSlot(i));
-                }
-            }
-        }
-
+        ((TileBase) world.getTileEntity(pos)).onDestroyed();
         super.breakBlock(world, pos, state);
     }
 

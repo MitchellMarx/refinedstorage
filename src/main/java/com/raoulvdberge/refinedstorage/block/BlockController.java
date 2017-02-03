@@ -102,15 +102,6 @@ public class BlockController extends BlockBase {
     }
 
     @Override
-    public void breakBlock(World world, BlockPos pos, IBlockState state) {
-        if (!world.isRemote) {
-            ((TileController) world.getTileEntity(pos)).onDestroyed();
-        }
-
-        super.breakBlock(world, pos, state);
-    }
-
-    @Override
     public List<ItemStack> getDrops(IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
         List<ItemStack> drops = new ArrayList<>();
 

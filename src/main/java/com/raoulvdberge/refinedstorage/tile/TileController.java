@@ -368,7 +368,9 @@ public class TileController extends TileBase implements INetworkMaster, IEnergyR
         energyEU.onChunkUnload();
     }
 
+    @Override
     public void onDestroyed() {
+        super.onDestroyed();
         nodeGraph.disconnectAll();
     }
 
