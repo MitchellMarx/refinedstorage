@@ -9,11 +9,12 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class TileDataManager {
     private static int LAST_ID = 0;
@@ -59,7 +60,13 @@ public class TileDataManager {
         watchedParametersCache.add(null);
     }
 
-    public void detectAndSendChanges() {
+    public void detectAndSendChanges(Collection<UUID> watchingPlayerUUIDs) {
+        World world = tile.getWorld();
+        List<EntityPlayerMP> watchingPlayers = watchingPlayerUUIDs.
+                stream().
+                map( (uuid) -> (EntityPlayerMP)world.getPlayerEntityByUUID(uuid)).
+                collect(Collectors.toList());
+
         for (int i = 0; i < watchedParameters.size(); ++i) {
             TileDataParameter parameter = watchedParameters.get(i);
 
@@ -69,7 +76,10 @@ public class TileDataManager {
             if (!real.equals(cached)) {
                 watchedParametersCache.set(i, real);
 
-                sendParameterToWatchers(parameter);
+                for(EntityPlayerMP player : watchingPlayers)
+                {
+                    sendParameter(player,parameter);
+                }
             }
         }
     }

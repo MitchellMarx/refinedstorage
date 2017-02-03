@@ -1,6 +1,5 @@
 package com.raoulvdberge.refinedstorage.tile;
 
-import com.raoulvdberge.refinedstorage.tile.data.IOnServerTickHandler;
 import com.raoulvdberge.refinedstorage.tile.data.ServerTickEventListener;
 import com.raoulvdberge.refinedstorage.tile.data.TileDataManager;
 import net.minecraft.block.state.IBlockState;
@@ -11,23 +10,25 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.player.PlayerContainerEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
+import java.util.HashSet;
+import java.util.UUID;
 
-public abstract class TileBase extends TileEntity implements IOnServerTickHandler {
+public abstract class TileBase extends TileEntity {
     private static final String NBT_DIRECTION = "Direction";
 
     private EnumFacing direction = EnumFacing.NORTH;
 
     protected TileDataManager dataManager = new TileDataManager(this);
 
-    private ServerTickEventListener serverTickEventListener = new ServerTickEventListener(this);
+    private ServerTickEventListener serverTickEventListener = new ServerTickEventListener( e -> this.updateWhileOpen() );
+
+    private HashSet<UUID> playersWithOpenContainer = new HashSet<UUID>();
 
     public void onDestroyed() {
         if (world.isRemote)
@@ -45,9 +46,9 @@ public abstract class TileBase extends TileEntity implements IOnServerTickHandle
         }
     }
 
-    public void onServerTick(TickEvent.ServerTickEvent e)
+    public void updateWhileOpen()
     {
-        dataManager.detectAndSendChanges();
+        dataManager.detectAndSendChanges(playersWithOpenContainer);
     }
 
     public void onContainerOpen(PlayerContainerEvent.Open e)
@@ -56,7 +57,23 @@ public abstract class TileBase extends TileEntity implements IOnServerTickHandle
             return;
 
         serverTickEventListener.setEnabled(true);
-        getDataManager().sendParametersTo((EntityPlayerMP) e.getEntityPlayer());
+        EntityPlayerMP player = (EntityPlayerMP)e.getEntityPlayer();
+        getDataManager().sendParametersTo(player);
+        playersWithOpenContainer.add(player.getUniqueID());
+    }
+
+    public void onContainerClose(PlayerContainerEvent.Close e)
+    {
+        if (getWorld().isRemote)
+            return;
+
+        EntityPlayerMP player = (EntityPlayerMP)e.getEntityPlayer();
+        playersWithOpenContainer.remove(player.getUniqueID());
+
+        if(playersWithOpenContainer.isEmpty())
+        {
+            serverTickEventListener.setEnabled(false);
+        }
     }
 
     public void updateBlock() {

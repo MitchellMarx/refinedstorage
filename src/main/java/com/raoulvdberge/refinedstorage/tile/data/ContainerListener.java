@@ -20,4 +20,18 @@ public class ContainerListener {
             }
         }
     }
+
+    @SubscribeEvent
+    public void onContainerClose(PlayerContainerEvent.Close e) {
+        Container container = e.getContainer();
+
+        if (container instanceof ContainerBase) {
+            TileBase tile = ((ContainerBase) container).getTile();
+
+            if (tile != null){
+                tile.onContainerClose(e);
+            }
+        }
+    }
+
 }

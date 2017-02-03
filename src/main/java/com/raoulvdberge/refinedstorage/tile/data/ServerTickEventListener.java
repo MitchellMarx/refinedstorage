@@ -6,10 +6,13 @@ import net.minecraft.inventory.Container;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import scala.collection.concurrent.Debug;
+
+import java.util.function.Consumer;
 
 public class ServerTickEventListener {
 
-    public ServerTickEventListener(IOnServerTickHandler handler) {
+    public ServerTickEventListener(Consumer<TickEvent.ServerTickEvent> handler) {
         this.handler = handler;
     }
 
@@ -17,6 +20,7 @@ public class ServerTickEventListener {
     {
         if(this.enabled == enabled)
             return;
+        System.out.println("enabled: " + enabled);
         this.enabled = enabled;
 
         if(this.enabled)
@@ -36,9 +40,9 @@ public class ServerTickEventListener {
 
     @SubscribeEvent
     public void onServerTick(TickEvent.ServerTickEvent e) {
-        handler.onServerTick(e);
+        handler.accept(e);
     }
 
     private boolean enabled;
-    private IOnServerTickHandler handler;
+    private Consumer<TickEvent.ServerTickEvent> handler;
 }
