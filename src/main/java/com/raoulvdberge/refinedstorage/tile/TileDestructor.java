@@ -97,8 +97,10 @@ public class TileDestructor extends TileMultipartNode implements IComparable, IF
         return RS.INSTANCE.config.destructorUsage + upgrades.getEnergyUsage();
     }
 
+    protected int ticks = 0;
     @Override
     public void updateNode() {
+        ticks++;
         if (ticks % upgrades.getSpeed(BASE_SPEED, 4) == 0) {
 
             BlockPos front = pos.offset(getDirection());

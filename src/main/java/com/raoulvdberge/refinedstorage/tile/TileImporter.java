@@ -58,8 +58,11 @@ public class TileImporter extends TileMultipartNode implements IComparable, IFil
         return RS.INSTANCE.config.importerUsage + upgrades.getEnergyUsage();
     }
 
+    protected int ticks = 0;
+
     @Override
     public void updateNode() {
+        ticks++;
         if (type == IType.ITEMS) {
             IImportingBehavior behavior = ImportingBehaviorItemHandler.INSTANCE;
             if (IntegrationCyclopsCore.isLoaded() && SlotlessItemHandlerHelper.isSlotless(getFacingTile(), getDirection().getOpposite())) {

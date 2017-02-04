@@ -17,11 +17,12 @@ import com.raoulvdberge.refinedstorage.tile.data.ITileDataProducer;
 import com.raoulvdberge.refinedstorage.tile.data.TileDataParameter;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.util.ITickable;
 import net.minecraftforge.fluids.FluidStack;
 
 import java.util.List;
 
-public class TileFluidStorage extends TileNode implements IFluidStorageProvider, IStorageGui, IComparable, IFilterable, IPrioritizable, IExcessVoidable, IAccessType {
+public class TileFluidStorage extends TileNode implements ITickable, IFluidStorageProvider, IStorageGui, IComparable, IFilterable, IPrioritizable, IExcessVoidable, IAccessType {
     public static final TileDataParameter<Integer> PRIORITY = IPrioritizable.createParameter();
     public static final TileDataParameter<Integer> COMPARE = IComparable.createParameter();
     public static final TileDataParameter<Boolean> VOID_EXCESS = IExcessVoidable.createParameter();
@@ -107,8 +108,6 @@ public class TileFluidStorage extends TileNode implements IFluidStorageProvider,
 
     @Override
     public void update() {
-        super.update();
-
         if (storage == null && storageTag != null) {
             storage = new FluidStorage();
 

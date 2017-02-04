@@ -5,7 +5,10 @@ import com.raoulvdberge.refinedstorage.api.network.INetworkNode;
 import com.raoulvdberge.refinedstorage.api.util.IWrenchable;
 import com.raoulvdberge.refinedstorage.tile.config.IRedstoneConfigurable;
 import com.raoulvdberge.refinedstorage.tile.config.RedstoneMode;
+import com.raoulvdberge.refinedstorage.tile.data.ServerTickEventListener;
 import com.raoulvdberge.refinedstorage.tile.data.TileDataParameter;
+import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -13,7 +16,7 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public abstract class TileNode extends TileBase implements ITickable, INetworkNode, IRedstoneConfigurable, IWrenchable {
+public abstract class TileNode extends TileBase implements INetworkNode, IRedstoneConfigurable, IWrenchable {
     public static final TileDataParameter<Integer> REDSTONE_MODE = RedstoneMode.createParameter();
 
     private static final String NBT_CONNECTED = "Connected";
@@ -32,57 +35,92 @@ public abstract class TileNode extends TileBase implements ITickable, INetworkNo
 
     public TileNode() {
         dataManager.addWatchedParameter(REDSTONE_MODE);
+        refreshConditionalUpdate();
     }
 
     @Override
     public boolean canUpdate() {
-        return redstoneMode.isEnabled(getWorld(), pos);
+        World world = getWorld();
+        return world != null && redstoneMode.isEnabled(world, pos);
     }
 
     public boolean isActive() {
         return isConnected() && canUpdate();
     }
 
+    private ServerTickEventListener serverTickEventListener = new ServerTickEventListener(e -> this.conditionalUpdate() );
+
     public abstract void updateNode();
 
-    protected int ticks = 0;
+    boolean wantsUpdate()
+    {
+        World world = getWorld();
+        if(world != null && getWorld().isRemote)
+            return false;
+
+        if(networkPos != null)
+            return true;
+
+        if (update != canUpdate() && network != null)
+            return true;
+
+        if (active != isActive() && hasConnectivityState())
+            return true;
+
+        return isActive();
+    }
+
+    private void refreshConditionalUpdate(){
+        serverTickEventListener.setEnabled(wantsUpdate());
+    }
+
+    public void neighborChanged(IBlockState state, World world, BlockPos pos, Block block)
+    {
+        refreshConditionalUpdate();
+    }
 
     @Override
-    public void update() {
-        if (!getWorld().isRemote) {
-            ticks++;
-            if (networkPos != null) {
-                TileEntity tile = getWorld().getTileEntity(networkPos);
+    public void onDestroyed(){
+        if(!getWorld().isRemote){
+            serverTickEventListener.setEnabled(false);
+        }
+        super.onDestroyed();
+    }
 
-                if (tile instanceof INetworkMaster) {
-                    ((INetworkMaster) tile).getNodeGraph().replace(this);
+    public void conditionalUpdate(){
+        if (networkPos != null) {
+            TileEntity tile = getWorld().getTileEntity(networkPos);
 
-                    onConnected((INetworkMaster) tile);
-                }
+            if (tile instanceof INetworkMaster) {
+                ((INetworkMaster) tile).getNodeGraph().replace(this);
 
-                networkPos = null;
+                onConnected((INetworkMaster) tile);
             }
 
-            if (update != canUpdate() && network != null) {
-                update = canUpdate();
+            networkPos = null;
+        }
 
-                onConnectionChange(network, update);
+        if (update != canUpdate() && network != null) {
+            update = canUpdate();
 
-                if (rebuildOnUpdateChange) {
-                    network.getNodeGraph().rebuild();
-                }
-            }
+            onConnectionChange(network, update);
 
-            if (active != isActive() && hasConnectivityState()) {
-                updateBlock();
-
-                active = isActive();
-            }
-
-            if (isActive()) {
-                updateNode();
+            if (rebuildOnUpdateChange) {
+                network.getNodeGraph().rebuild();
             }
         }
+
+        if (active != isActive() && hasConnectivityState()) {
+            updateBlock();
+
+            active = isActive();
+        }
+
+        if (isActive()) {
+            updateNode();
+        }
+
+        refreshConditionalUpdate();
     }
 
     @Override
@@ -93,6 +131,7 @@ public abstract class TileNode extends TileBase implements ITickable, INetworkNo
         onConnectionChange(network, true);
 
         markDirty();
+        refreshConditionalUpdate();
     }
 
     @Override
@@ -103,6 +142,7 @@ public abstract class TileNode extends TileBase implements ITickable, INetworkNo
         this.network = null;
 
         markDirty();
+        refreshConditionalUpdate();
     }
 
     public void onConnectionChange(INetworkMaster network, boolean state) {
@@ -144,6 +184,7 @@ public abstract class TileNode extends TileBase implements ITickable, INetworkNo
         this.redstoneMode = mode;
 
         markDirty();
+        refreshConditionalUpdate();
     }
 
     @Override
@@ -154,6 +195,7 @@ public abstract class TileNode extends TileBase implements ITickable, INetworkNo
 
         if (tag.hasKey(NBT_NETWORK)) {
             networkPos = BlockPos.fromLong(tag.getLong(NBT_NETWORK));
+            refreshConditionalUpdate();
         }
     }
 
@@ -195,6 +237,7 @@ public abstract class TileNode extends TileBase implements ITickable, INetworkNo
     public void readUpdate(NBTTagCompound tag) {
         if (hasConnectivityState()) {
             connected = tag.getBoolean(NBT_CONNECTED);
+            refreshConditionalUpdate();
         }
 
         super.readUpdate(tag);

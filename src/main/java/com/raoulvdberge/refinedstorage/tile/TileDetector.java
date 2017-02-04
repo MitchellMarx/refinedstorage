@@ -21,12 +21,13 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.util.ITickable;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.items.IItemHandler;
 
-public class TileDetector extends TileNode implements IComparable, IType {
+public class TileDetector extends TileNode implements ITickable, IComparable, IType {
     public static final TileDataParameter<Integer> COMPARE = IComparable.createParameter();
     public static final TileDataParameter<Integer> TYPE = IType.createParameter();
 
@@ -104,8 +105,10 @@ public class TileDetector extends TileNode implements IComparable, IType {
         return RS.INSTANCE.config.detectorUsage;
     }
 
+    protected int ticks = 0;
     @Override
     public void updateNode() {
+        ticks++;
         if (ticks % SPEED == 0) {
             if (type == IType.ITEMS) {
                 ItemStack slot = itemFilters.getStackInSlot(0);
@@ -160,8 +163,6 @@ public class TileDetector extends TileNode implements IComparable, IType {
 
             updateBlock();
         }
-
-        super.update();
     }
 
     @Override

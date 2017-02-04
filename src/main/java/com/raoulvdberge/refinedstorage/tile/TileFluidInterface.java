@@ -91,8 +91,10 @@ public class TileFluidInterface extends TileNode implements IComparable {
         tankOut.setCanFill(false);
     }
 
+    protected int ticks = 0;
     @Override
     public void updateNode() {
+        ticks++;
         ItemStack container = in.getStackInSlot(0);
 
         if (container != null) {

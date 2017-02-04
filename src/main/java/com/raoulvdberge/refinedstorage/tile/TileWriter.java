@@ -10,9 +10,10 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ITickable;
 import net.minecraftforge.common.capabilities.Capability;
 
-public class TileWriter extends TileMultipartNode implements IWriter {
+public class TileWriter extends TileMultipartNode implements ITickable, IWriter {
     private static final String NBT_CHANNEL = "Channel";
 
     private static final TileDataParameter<String> CHANNEL = TileReader.createChannelParameter();
@@ -33,8 +34,6 @@ public class TileWriter extends TileMultipartNode implements IWriter {
 
     @Override
     public void update() {
-        super.update();
-
         if (!getWorld().isRemote && getRedstoneStrength() != lastRedstoneStrength) {
             lastRedstoneStrength = getRedstoneStrength();
 

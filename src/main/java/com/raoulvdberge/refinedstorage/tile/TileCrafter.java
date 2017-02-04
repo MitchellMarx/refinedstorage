@@ -17,6 +17,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ITickable;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
@@ -25,7 +26,7 @@ import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TileCrafter extends TileNode implements ICraftingPatternContainer {
+public class TileCrafter extends TileNode implements ITickable, ICraftingPatternContainer {
     public static final TileDataParameter<Boolean> TRIGGERED_AUTOCRAFTING = new TileDataParameter<>(DataSerializers.BOOLEAN, false, new ITileDataProducer<Boolean, TileCrafter>() {
         @Override
         public Boolean getValue(TileCrafter tile) {
@@ -104,13 +105,13 @@ public class TileCrafter extends TileNode implements ICraftingPatternContainer {
         return usage;
     }
 
+    protected int ticks = 0;
     @Override
     public void update() {
+        ticks++;
         if (!getWorld().isRemote && ticks == 0) {
             rebuildPatterns();
         }
-
-        super.update();
     }
 
     @Override

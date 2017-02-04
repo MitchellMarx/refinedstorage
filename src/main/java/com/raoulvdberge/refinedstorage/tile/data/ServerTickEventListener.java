@@ -20,7 +20,7 @@ public class ServerTickEventListener {
     {
         if(this.enabled == enabled)
             return;
-        System.out.println("enabled: " + enabled);
+//        System.out.println("enabled: " + enabled);
         this.enabled = enabled;
 
         if(this.enabled)
@@ -40,7 +40,8 @@ public class ServerTickEventListener {
 
     @SubscribeEvent
     public void onServerTick(TickEvent.ServerTickEvent e) {
-        handler.accept(e);
+        if(e.phase == TickEvent.Phase.END)
+            handler.accept(e);
     }
 
     private boolean enabled;

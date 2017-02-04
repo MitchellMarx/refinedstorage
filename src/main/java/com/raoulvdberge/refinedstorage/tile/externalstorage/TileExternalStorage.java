@@ -24,6 +24,7 @@ import mcmultipart.microblock.IMicroblock;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ITickable;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.items.IItemHandler;
 import powercrystals.minefactoryreloaded.api.IDeepStorageUnit;
@@ -31,7 +32,7 @@ import powercrystals.minefactoryreloaded.api.IDeepStorageUnit;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TileExternalStorage extends TileMultipartNode implements IItemStorageProvider, IFluidStorageProvider, IStorageGui, IComparable, IFilterable, IPrioritizable, IType, IAccessType {
+public class TileExternalStorage extends TileMultipartNode implements ITickable, IItemStorageProvider, IFluidStorageProvider, IStorageGui, IComparable, IFilterable, IPrioritizable, IType, IAccessType {
     public static final TileDataParameter<Integer> PRIORITY = IPrioritizable.createParameter();
     public static final TileDataParameter<Integer> COMPARE = IComparable.createParameter();
     public static final TileDataParameter<Integer> MODE = IFilterable.createParameter();
@@ -150,8 +151,6 @@ public class TileExternalStorage extends TileMultipartNode implements IItemStora
                 network.getFluidStorageCache().invalidate();
             }
         }
-
-        super.update();
     }
 
     @Override

@@ -15,12 +15,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ITickable;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 
-public class TileSolderer extends TileNode {
+public class TileSolderer extends TileNode implements ITickable {
     public static final TileDataParameter<Integer> DURATION = new TileDataParameter<>(DataSerializers.VARINT, 0, new ITileDataProducer<Integer, TileSolderer>() {
         @Override
         public Integer getValue(TileSolderer tile) {
@@ -129,8 +130,6 @@ public class TileSolderer extends TileNode {
 
     @Override
     public void update() {
-        super.update();
-
         if (!getWorld().isRemote && working != wasWorking) {
             wasWorking = working;
 

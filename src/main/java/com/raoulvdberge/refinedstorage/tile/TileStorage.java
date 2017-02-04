@@ -18,11 +18,12 @@ import com.raoulvdberge.refinedstorage.tile.data.TileDataParameter;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.util.ITickable;
 import net.minecraftforge.items.ItemHandlerHelper;
 
 import java.util.List;
 
-public class TileStorage extends TileNode implements IItemStorageProvider, IStorageGui, IComparable, IFilterable, IPrioritizable, IExcessVoidable, IAccessType {
+public class TileStorage extends TileNode implements ITickable, IItemStorageProvider, IStorageGui, IComparable, IFilterable, IPrioritizable, IExcessVoidable, IAccessType {
     public static final TileDataParameter<Integer> PRIORITY = IPrioritizable.createParameter();
     public static final TileDataParameter<Integer> COMPARE = IComparable.createParameter();
     public static final TileDataParameter<Integer> MODE = IFilterable.createParameter();
@@ -108,8 +109,6 @@ public class TileStorage extends TileNode implements IItemStorageProvider, IStor
 
     @Override
     public void update() {
-        super.update();
-
         if (storage == null && storageTag != null) {
             storage = new ItemStorage();
 

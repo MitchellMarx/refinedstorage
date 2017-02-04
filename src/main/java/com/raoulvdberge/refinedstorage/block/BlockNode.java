@@ -3,6 +3,7 @@ package com.raoulvdberge.refinedstorage.block;
 import com.raoulvdberge.refinedstorage.api.network.INetworkMaster;
 import com.raoulvdberge.refinedstorage.tile.TileController;
 import com.raoulvdberge.refinedstorage.tile.TileNode;
+import net.minecraft.block.Block;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -89,6 +90,16 @@ public abstract class BlockNode extends BlockBase {
         if (network != null) {
             network.getNodeGraph().rebuild();
         }
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public void neighborChanged(IBlockState state, World world, BlockPos pos, Block block) {
+        if(world.isRemote)
+            return;
+
+        TileNode tile = (TileNode)world.getTileEntity(pos);
+        tile.neighborChanged( state, world, pos, block);
     }
 
     public boolean hasConnectivityState() {

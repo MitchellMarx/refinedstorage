@@ -54,8 +54,10 @@ public class TileExporter extends TileMultipartNode implements IComparable, ITyp
         return RS.INSTANCE.config.exporterUsage + upgrades.getEnergyUsage();
     }
 
+    protected int ticks = 0;
     @Override
     public void updateNode() {
+        ticks++;
         if (ticks % upgrades.getSpeed() == 0) {
             if (type == IType.ITEMS) {
                 IItemHandler handler = RSUtils.getItemHandler(getFacingTile(), getDirection().getOpposite());
