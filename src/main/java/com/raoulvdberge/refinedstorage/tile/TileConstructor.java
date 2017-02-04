@@ -119,7 +119,10 @@ public class TileConstructor extends TileMultipartNode implements IComparable, I
                     if (drop && item != null) {
                         dropItem();
                     } else {
-                        placeBlock();
+                        BlockPos front = pos.offset(getDirection());
+                        if (getWorld().isAirBlock(front) && block.getBlock().canPlaceBlockAt(getWorld(), front)) {
+                            placeBlock();
+                        }
                     }
                 } else if (item != null) {
                     if (item.getItem() == Items.FIREWORKS && !drop) {
@@ -165,64 +168,60 @@ public class TileConstructor extends TileMultipartNode implements IComparable, I
     }
 
     private void placeBlock() {
-        BlockPos front = pos.offset(getDirection());
+        ItemStack took = network.extractItem(itemFilters.getStackInSlot(0), 1, compare, true);
 
-        if (getWorld().isAirBlock(front) && block.getBlock().canPlaceBlockAt(getWorld(), front)) {
-            ItemStack took = network.extractItem(itemFilters.getStackInSlot(0), 1, compare, true);
+        if (took != null) {
+            IBlockState state = block.getBlock().getStateForPlacement(getWorld(), front, getDirection(), 0.5F, 0.5F, 0.5F, took.getMetadata(), null, item);
 
-            if (took != null) {
-                IBlockState state = block.getBlock().getStateForPlacement(getWorld(), front, getDirection(), 0.5F, 0.5F, 0.5F, took.getMetadata(), null, item);
+            BlockEvent.PlaceEvent e = new BlockEvent.PlaceEvent(new BlockSnapshot(getWorld(), front, state), getWorld().getBlockState(pos), FakePlayerFactory.getMinecraft((WorldServer) getWorld()), null);
 
-                BlockEvent.PlaceEvent e = new BlockEvent.PlaceEvent(new BlockSnapshot(getWorld(), front, state), getWorld().getBlockState(pos), FakePlayerFactory.getMinecraft((WorldServer) getWorld()), null);
+            if (MinecraftForge.EVENT_BUS.post(e)) {
+                return;
+            }
 
-                if (MinecraftForge.EVENT_BUS.post(e)) {
-                    return;
-                }
+            took = network.extractItem(itemFilters.getStackInSlot(0), 1, compare, false);
 
-                took = network.extractItem(itemFilters.getStackInSlot(0), 1, compare, false);
+            getWorld().setBlockState(front, state, 1 | 2);
+            block.getBlock().onBlockPlacedBy(getWorld(), front, state, null, took);
 
-                getWorld().setBlockState(front, state, 1 | 2);
-                block.getBlock().onBlockPlacedBy(getWorld(), front, state, null, took);
+            // From ItemBlock#onItemUse
+            SoundType blockSound = block.getBlock().getSoundType(state, getWorld(), pos, null);
+            getWorld().playSound(null, front, blockSound.getPlaceSound(), SoundCategory.BLOCKS, (blockSound.getVolume() + 1.0F) / 2.0F, blockSound.getPitch() * 0.8F);
 
-                // From ItemBlock#onItemUse
-                SoundType blockSound = block.getBlock().getSoundType(state, getWorld(), pos, null);
-                getWorld().playSound(null, front, blockSound.getPlaceSound(), SoundCategory.BLOCKS, (blockSound.getVolume() + 1.0F) / 2.0F, blockSound.getPitch() * 0.8F);
+            if (block.getBlock() == Blocks.SKULL) {
+                getWorld().setBlockState(front, getWorld().getBlockState(front).withProperty(BlockSkull.FACING, getDirection()));
 
-                if (block.getBlock() == Blocks.SKULL) {
-                    getWorld().setBlockState(front, getWorld().getBlockState(front).withProperty(BlockSkull.FACING, getDirection()));
+                TileEntity tile = getWorld().getTileEntity(front);
 
-                    TileEntity tile = getWorld().getTileEntity(front);
+                if (tile instanceof TileEntitySkull) {
+                    TileEntitySkull skullTile = (TileEntitySkull) tile;
 
-                    if (tile instanceof TileEntitySkull) {
-                        TileEntitySkull skullTile = (TileEntitySkull) tile;
+                    if (item.getItemDamage() == 3) {
+                        GameProfile playerInfo = null;
 
-                        if (item.getItemDamage() == 3) {
-                            GameProfile playerInfo = null;
+                        if (item.hasTagCompound()) {
+                            NBTTagCompound tag = item.getTagCompound();
 
-                            if (item.hasTagCompound()) {
-                                NBTTagCompound tag = item.getTagCompound();
-
-                                if (tag.hasKey("SkullOwner", 10)) {
-                                    playerInfo = NBTUtil.readGameProfileFromNBT(tag.getCompoundTag("SkullOwner"));
-                                } else if (tag.hasKey("SkullOwner", 8) && !tag.getString("SkullOwner").isEmpty()) {
-                                    playerInfo = new GameProfile(null, tag.getString("SkullOwner"));
-                                }
+                            if (tag.hasKey("SkullOwner", 10)) {
+                                playerInfo = NBTUtil.readGameProfileFromNBT(tag.getCompoundTag("SkullOwner"));
+                            } else if (tag.hasKey("SkullOwner", 8) && !tag.getString("SkullOwner").isEmpty()) {
+                                playerInfo = new GameProfile(null, tag.getString("SkullOwner"));
                             }
-
-                            skullTile.setPlayerProfile(playerInfo);
-                        } else {
-                            skullTile.setType(item.getMetadata());
                         }
 
-                        Blocks.SKULL.checkWitherSpawn(getWorld(), front, skullTile);
+                        skullTile.setPlayerProfile(playerInfo);
+                    } else {
+                        skullTile.setType(item.getMetadata());
                     }
 
+                    Blocks.SKULL.checkWitherSpawn(getWorld(), front, skullTile);
                 }
-            } else if (upgrades.hasUpgrade(ItemUpgrade.TYPE_CRAFTING)) {
-                ItemStack craft = itemFilters.getStackInSlot(0);
 
-                network.scheduleCraftingTask(craft, 1, compare);
             }
+        } else if (upgrades.hasUpgrade(ItemUpgrade.TYPE_CRAFTING)) {
+            ItemStack craft = itemFilters.getStackInSlot(0);
+
+            network.scheduleCraftingTask(craft, 1, compare);
         }
     }
 
