@@ -222,6 +222,11 @@ public class TileDiskDrive extends TileNode implements IItemStorageProvider, IFl
     }
 
     @Override
+    protected boolean wantsUpdateNode(){
+        return false;
+    }
+
+    @Override
     public void updateNode() {
     }
 

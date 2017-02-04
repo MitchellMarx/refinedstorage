@@ -50,6 +50,7 @@ public abstract class TileNode extends TileBase implements INetworkNode, IRedsto
 
     private ServerTickEventListener serverTickEventListener = new ServerTickEventListener(e -> this.conditionalUpdate() );
 
+    protected abstract boolean wantsUpdateNode();
     public abstract void updateNode();
 
     boolean wantsUpdate()
@@ -67,10 +68,13 @@ public abstract class TileNode extends TileBase implements INetworkNode, IRedsto
         if (active != isActive() && hasConnectivityState())
             return true;
 
-        return isActive();
+        if(!isActive())
+            return false;
+
+        return wantsUpdateNode();
     }
 
-    private void refreshConditionalUpdate(){
+    protected void refreshConditionalUpdate(){
         serverTickEventListener.setEnabled(wantsUpdate());
     }
 
@@ -116,7 +120,7 @@ public abstract class TileNode extends TileBase implements INetworkNode, IRedsto
             active = isActive();
         }
 
-        if (isActive()) {
+        if (isActive() && wantsUpdateNode()) {
             updateNode();
         }
 

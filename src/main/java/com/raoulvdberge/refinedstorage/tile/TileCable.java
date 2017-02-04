@@ -9,6 +9,10 @@ public class TileCable extends TileMultipartNode {
     }
 
     @Override
+    protected boolean wantsUpdateNode(){
+        return false;
+    }
+    @Override
     public void updateNode() {
         // NO OP
     }

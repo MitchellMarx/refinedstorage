@@ -27,7 +27,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.items.IItemHandler;
 
-public class TileDetector extends TileNode implements ITickable, IComparable, IType {
+public class TileDetector extends TileNode implements IComparable, IType {
     public static final TileDataParameter<Integer> COMPARE = IComparable.createParameter();
     public static final TileDataParameter<Integer> TYPE = IType.createParameter();
 
@@ -105,9 +105,24 @@ public class TileDetector extends TileNode implements ITickable, IComparable, IT
         return RS.INSTANCE.config.detectorUsage;
     }
 
+    @Override
+    protected boolean wantsUpdateNode(){
+        return true;
+    }
+
     protected int ticks = 0;
     @Override
     public void updateNode() {
+        // was ITickable
+        if (powered != wasPowered) {
+            wasPowered = powered;
+
+            getWorld().notifyNeighborsOfStateChange(pos, RSBlocks.DETECTOR);
+
+            updateBlock();
+        }
+        // end
+
         ticks++;
         if (ticks % SPEED == 0) {
             if (type == IType.ITEMS) {
@@ -151,17 +166,6 @@ public class TileDetector extends TileNode implements ITickable, IComparable, IT
                     powered = isPowered(network.getFluidStorageCache().getList().getStacks().stream().map(s -> s.amount).mapToInt(Number::intValue).sum());
                 }
             }
-        }
-    }
-
-    @Override
-    public void update() {
-        if (powered != wasPowered) {
-            wasPowered = powered;
-
-            getWorld().notifyNeighborsOfStateChange(pos, RSBlocks.DETECTOR);
-
-            updateBlock();
         }
     }
 

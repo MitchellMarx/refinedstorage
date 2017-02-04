@@ -14,6 +14,11 @@ public class TileCraftingMonitor extends TileNode implements ICraftingMonitor {
     }
 
     @Override
+    protected boolean wantsUpdateNode(){
+        return false;
+    }
+
+    @Override
     public void updateNode() {
     }
 

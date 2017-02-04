@@ -22,7 +22,7 @@ import net.minecraftforge.fluids.FluidStack;
 
 import java.util.List;
 
-public class TileFluidStorage extends TileNode implements ITickable, IFluidStorageProvider, IStorageGui, IComparable, IFilterable, IPrioritizable, IExcessVoidable, IAccessType {
+public class TileFluidStorage extends TileNode implements IFluidStorageProvider, IStorageGui, IComparable, IFilterable, IPrioritizable, IExcessVoidable, IAccessType {
     public static final TileDataParameter<Integer> PRIORITY = IPrioritizable.createParameter();
     public static final TileDataParameter<Integer> COMPARE = IComparable.createParameter();
     public static final TileDataParameter<Boolean> VOID_EXCESS = IExcessVoidable.createParameter();
@@ -103,11 +103,13 @@ public class TileFluidStorage extends TileNode implements ITickable, IFluidStora
     }
 
     @Override
-    public void updateNode() {
+    protected boolean wantsUpdateNode(){
+        return true;
     }
 
     @Override
-    public void update() {
+    public void updateNode() {
+        // was ITickable
         if (storage == null && storageTag != null) {
             storage = new FluidStorage();
 
@@ -115,6 +117,7 @@ public class TileFluidStorage extends TileNode implements ITickable, IFluidStora
                 network.getFluidStorageCache().invalidate();
             }
         }
+        // end
     }
 
     public void onBreak() {

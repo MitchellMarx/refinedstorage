@@ -32,7 +32,7 @@ import powercrystals.minefactoryreloaded.api.IDeepStorageUnit;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TileExternalStorage extends TileMultipartNode implements ITickable, IItemStorageProvider, IFluidStorageProvider, IStorageGui, IComparable, IFilterable, IPrioritizable, IType, IAccessType {
+public class TileExternalStorage extends TileMultipartNode implements IItemStorageProvider, IFluidStorageProvider, IStorageGui, IComparable, IFilterable, IPrioritizable, IType, IAccessType {
     public static final TileDataParameter<Integer> PRIORITY = IPrioritizable.createParameter();
     public static final TileDataParameter<Integer> COMPARE = IComparable.createParameter();
     public static final TileDataParameter<Integer> MODE = IFilterable.createParameter();
@@ -111,23 +111,12 @@ public class TileExternalStorage extends TileMultipartNode implements ITickable,
     }
 
     @Override
+    protected boolean wantsUpdateNode(){
+        return true;
+    }
+
+    @Override
     public void updateNode() {
-    }
-
-    @Override
-    public void onConnectionChange(INetworkMaster network, boolean state) {
-        super.onConnectionChange(network, state);
-
-        updateStorage(network);
-
-        network.getItemStorageCache().invalidate();
-        network.getFluidStorageCache().invalidate();
-    }
-
-    private int networkTicks;
-
-    @Override
-    public void update() {
         if (!getWorld().isRemote && network != null) {
             if (networkTicks++ == 0) {
                 updateStorage(network);
@@ -152,6 +141,18 @@ public class TileExternalStorage extends TileMultipartNode implements ITickable,
             }
         }
     }
+
+    @Override
+    public void onConnectionChange(INetworkMaster network, boolean state) {
+        super.onConnectionChange(network, state);
+
+        updateStorage(network);
+
+        network.getItemStorageCache().invalidate();
+        network.getFluidStorageCache().invalidate();
+    }
+
+    private int networkTicks;
 
     @Override
     public NBTTagCompound writeConfiguration(NBTTagCompound tag) {

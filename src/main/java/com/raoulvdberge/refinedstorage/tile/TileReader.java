@@ -54,6 +54,10 @@ public class TileReader extends TileMultipartNode implements IReader {
     }
 
     @Override
+    protected boolean wantsUpdateNode(){
+        return false;
+    }
+    @Override
     public void updateNode() {
         // NO OP
     }

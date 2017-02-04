@@ -13,7 +13,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraftforge.common.capabilities.Capability;
 
-public class TileWriter extends TileMultipartNode implements ITickable, IWriter {
+public class TileWriter extends TileMultipartNode implements IWriter {
     private static final String NBT_CHANNEL = "Channel";
 
     private static final TileDataParameter<String> CHANNEL = TileReader.createChannelParameter();
@@ -33,17 +33,20 @@ public class TileWriter extends TileMultipartNode implements ITickable, IWriter 
     }
 
     @Override
-    public void update() {
-        if (!getWorld().isRemote && getRedstoneStrength() != lastRedstoneStrength) {
-            lastRedstoneStrength = getRedstoneStrength();
+    protected boolean wantsUpdateNode(){
+        if(getRedstoneStrength() != lastRedstoneStrength)
+            return true;
 
-            getWorld().notifyNeighborsOfStateChange(pos, RSBlocks.WRITER);
-        }
+        return false;
     }
 
     @Override
     public void updateNode() {
-        // NO OP
+        if (getRedstoneStrength() != lastRedstoneStrength) {
+            lastRedstoneStrength = getRedstoneStrength();
+
+            getWorld().notifyNeighborsOfStateChange(pos, RSBlocks.WRITER);
+        }
     }
 
     @Override
@@ -54,6 +57,7 @@ public class TileWriter extends TileMultipartNode implements ITickable, IWriter 
     @Override
     public void setRedstoneStrength(int strength) {
         redstoneStrength = strength;
+        refreshConditionalUpdate();
     }
 
     @Override

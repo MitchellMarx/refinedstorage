@@ -200,6 +200,11 @@ public class TileGrid extends TileNode implements IGrid {
     }
 
     @Override
+    protected boolean wantsUpdateNode(){
+        return false;
+    }
+
+    @Override
     public void updateNode() {
     }
 

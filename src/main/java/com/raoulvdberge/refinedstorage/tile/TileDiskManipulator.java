@@ -224,6 +224,11 @@ public class TileDiskManipulator extends TileNode implements IComparable, IFilte
         return true;
     }
 
+    @Override
+    protected boolean wantsUpdateNode(){
+        return true;
+    }
+
     protected int ticks = 0;
     @Override
     public void updateNode() {

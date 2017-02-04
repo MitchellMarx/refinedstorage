@@ -97,6 +97,11 @@ public class TileDestructor extends TileMultipartNode implements IComparable, IF
         return RS.INSTANCE.config.destructorUsage + upgrades.getEnergyUsage();
     }
 
+    @Override
+    protected boolean wantsUpdateNode(){
+        return true;
+    }
+
     protected int ticks = 0;
     @Override
     public void updateNode() {

@@ -54,6 +54,11 @@ public class TileExporter extends TileMultipartNode implements IComparable, ITyp
         return RS.INSTANCE.config.exporterUsage + upgrades.getEnergyUsage();
     }
 
+    @Override
+    protected boolean wantsUpdateNode(){
+        return true;
+    }
+
     protected int ticks = 0;
     @Override
     public void updateNode() {

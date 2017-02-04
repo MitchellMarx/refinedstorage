@@ -61,6 +61,11 @@ public class TileImporter extends TileMultipartNode implements IComparable, IFil
     protected int ticks = 0;
 
     @Override
+    protected boolean wantsUpdateNode(){
+        return true;
+    }
+
+    @Override
     public void updateNode() {
         ticks++;
         if (type == IType.ITEMS) {

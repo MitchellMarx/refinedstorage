@@ -104,6 +104,11 @@ public class TileConstructor extends TileMultipartNode implements IComparable, I
         return RS.INSTANCE.config.constructorUsage + upgrades.getEnergyUsage();
     }
 
+    @Override
+    protected boolean wantsUpdateNode(){
+        return true;
+    }
+
     protected int ticks = 0;
     @Override
     public void updateNode() {

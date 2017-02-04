@@ -26,7 +26,7 @@ import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TileCrafter extends TileNode implements ITickable, ICraftingPatternContainer {
+public class TileCrafter extends TileNode implements ICraftingPatternContainer {
     public static final TileDataParameter<Boolean> TRIGGERED_AUTOCRAFTING = new TileDataParameter<>(DataSerializers.BOOLEAN, false, new ITileDataProducer<Boolean, TileCrafter>() {
         @Override
         public Boolean getValue(TileCrafter tile) {
@@ -106,16 +106,21 @@ public class TileCrafter extends TileNode implements ITickable, ICraftingPattern
     }
 
     protected int ticks = 0;
+
     @Override
-    public void update() {
-        ticks++;
-        if (!getWorld().isRemote && ticks == 0) {
-            rebuildPatterns();
-        }
+    protected boolean wantsUpdateNode(){
+        return true;
     }
 
     @Override
     public void updateNode() {
+        // was ITickable
+        ticks++;
+        if (!getWorld().isRemote && ticks == 0) {
+            rebuildPatterns();
+        }
+        // end
+
         if (triggeredAutocrafting && getWorld().isBlockPowered(pos)) {
             for (ICraftingPattern pattern : actualPatterns) {
                 for (ItemStack output : pattern.getOutputs()) {

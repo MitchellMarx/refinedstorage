@@ -84,6 +84,11 @@ public class TileSolderer extends TileNode implements ITickable {
     }
 
     @Override
+    protected boolean wantsUpdateNode(){
+        return true;
+    }
+
+    @Override
     public void updateNode() {
         if (items.getStackInSlot(1) == null && items.getStackInSlot(2) == null && result.getStackInSlot(0) == null) {
             stop();

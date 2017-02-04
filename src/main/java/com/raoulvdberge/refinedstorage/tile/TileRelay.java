@@ -17,6 +17,11 @@ public class TileRelay extends TileNode {
     }
 
     @Override
+    public boolean wantsUpdateNode(){
+        return false;
+    }
+
+    @Override
     public void updateNode() {
     }
 

@@ -87,6 +87,11 @@ public class TileNetworkTransmitter extends TileNode {
     }
 
     @Override
+    protected boolean wantsUpdateNode(){
+        return false;
+    }
+
+    @Override
     public void updateNode() {
     }
 

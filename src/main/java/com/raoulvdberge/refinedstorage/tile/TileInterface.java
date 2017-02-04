@@ -44,6 +44,11 @@ public class TileInterface extends TileNode implements IComparable {
         return RS.INSTANCE.config.interfaceUsage + upgrades.getEnergyUsage();
     }
 
+    @Override
+    protected boolean wantsUpdateNode(){
+        return true;
+    }
+
     protected int ticks = 0;
     @Override
     public void updateNode() {

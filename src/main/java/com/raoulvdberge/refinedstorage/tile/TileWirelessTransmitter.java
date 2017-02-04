@@ -36,6 +36,11 @@ public class TileWirelessTransmitter extends TileNode implements IWirelessTransm
     }
 
     @Override
+    protected boolean wantsUpdateNode(){
+        return false;
+    }
+
+    @Override
     public void updateNode() {
     }
 

@@ -4,6 +4,12 @@ import com.raoulvdberge.refinedstorage.RS;
 import com.raoulvdberge.refinedstorage.tile.config.RedstoneMode;
 
 public class TileNetworkReceiver extends TileNode {
+
+    @Override
+    protected boolean wantsUpdateNode(){
+        return false;
+    }
+
     @Override
     public void updateNode() {
     }
