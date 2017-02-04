@@ -121,7 +121,7 @@ public class TileConstructor extends TileMultipartNode implements IComparable, I
                     } else {
                         BlockPos front = pos.offset(getDirection());
                         if (getWorld().isAirBlock(front) && block.getBlock().canPlaceBlockAt(getWorld(), front)) {
-                            placeBlock();
+                            placeBlock(front);
                         }
                     }
                 } else if (item != null) {
@@ -167,7 +167,7 @@ public class TileConstructor extends TileMultipartNode implements IComparable, I
         }
     }
 
-    private void placeBlock() {
+    private void placeBlock(BlockPos front) {
         ItemStack took = network.extractItem(itemFilters.getStackInSlot(0), 1, compare, true);
 
         if (took != null) {
