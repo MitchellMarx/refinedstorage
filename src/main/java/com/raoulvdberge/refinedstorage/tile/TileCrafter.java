@@ -35,9 +35,7 @@ public class TileCrafter extends TileNode implements ICraftingPatternContainer {
     }, new ITileDataConsumer<Boolean, TileCrafter>() {
         @Override
         public void setValue(TileCrafter tile, Boolean value) {
-            tile.triggeredAutocrafting = value;
-
-            tile.markDirty();
+            tile.setTriggeredAutocrafting(value);
         }
     });
 
@@ -70,13 +68,20 @@ public class TileCrafter extends TileNode implements ICraftingPatternContainer {
 
     private ItemHandlerUpgrade upgrades = new ItemHandlerUpgrade(4, this, ItemUpgrade.TYPE_SPEED);
 
+    private void setTriggeredAutocrafting(boolean val){
+        triggeredAutocrafting = val;
+        refreshConditionalUpdate();
+        markDirty();
+    }
     private boolean triggeredAutocrafting = false;
 
     public TileCrafter() {
         dataManager.addWatchedParameter(TRIGGERED_AUTOCRAFTING);
     }
 
+    private boolean hasRebuiltPatterns = false;
     private void rebuildPatterns() {
+        hasRebuiltPatterns = true;
         actualPatterns.clear();
 
         for (int i = 0; i < patterns.getSlots(); ++i) {
@@ -105,18 +110,21 @@ public class TileCrafter extends TileNode implements ICraftingPatternContainer {
         return usage;
     }
 
-    protected int ticks = 0;
-
     @Override
     protected boolean wantsUpdateNode(){
-        return true;
+        if(!hasRebuiltPatterns)
+            return true;
+
+        if(triggeredAutocrafting && getWorld().isBlockPowered(pos))
+            return true;
+
+        return false;
     }
 
     @Override
     public void updateNode() {
         // was ITickable
-        ticks++;
-        if (!getWorld().isRemote && ticks == 0) {
+        if (!hasRebuiltPatterns) {
             rebuildPatterns();
         }
         // end
@@ -173,7 +181,7 @@ public class TileCrafter extends TileNode implements ICraftingPatternContainer {
         super.readConfiguration(tag);
 
         if (tag.hasKey(NBT_TRIGGERED_AUTOCRAFTING)) {
-            triggeredAutocrafting = tag.getBoolean(NBT_TRIGGERED_AUTOCRAFTING);
+            setTriggeredAutocrafting(tag.getBoolean(NBT_TRIGGERED_AUTOCRAFTING));
         }
     }
 
