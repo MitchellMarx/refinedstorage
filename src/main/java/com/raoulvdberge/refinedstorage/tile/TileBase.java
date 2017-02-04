@@ -30,6 +30,16 @@ public abstract class TileBase extends TileEntity {
 
     private HashSet<UUID> playersWithOpenContainer = new HashSet<UUID>();
 
+    @Override
+    public void onChunkUnload()
+    {
+        super.onChunkUnload();
+
+        if (!world.isRemote){
+            serverTickEventListener.setEnabled(false);
+        }
+    }
+
     public void onDestroyed() {
         if (world.isRemote)
             return;
